@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+venv/
+.env
+
+# Database
+*.db
+*.sqlite3
+
+# Large media files (exceed GitHub 100MB limit)
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

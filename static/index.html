@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ango Hub - Local Annotation Platform</title>
+    <!-- Outfit Font for Modern Premium Look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <!-- App Container -->
+    <div id="app" class="app-container">
+        
+        <!-- TOP NAVBAR -->
+        <header class="top-navbar">
+            <div class="nav-left">
+                <div class="logo">
+                    <i data-lucide="layers" class="logo-icon"></i>
+                    <span>Ango Hub <span class="logo-badge">Local</span></span>
+                </div>
+                
+                <!-- Project Selector (when project active) -->
+                <div id="project-selector-container" class="project-selector-container hidden">
+                    <i data-lucide="chevron-right" class="nav-divider"></i>
+                    <select id="active-project-select" class="nav-select">
+                        <option value="">Select Project...</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <!-- User Simulator Dropdown (Simulating authentication) -->
+                <div class="user-simulator">
+                    <label for="current-user-select"><i data-lucide="user-cog" class="nav-icon"></i> Act as:</label>
+                    <select id="current-user-select" class="nav-select">
+                        <!-- Loaded from database dynamically -->
+                    </select>
+                </div>
+                
+                <div class="connection-status">
+                    <span class="status-dot online"></span>
+                    <span>Localhost:8000</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN APP BODY -->
+        <div class="main-body">
+            
+            <!-- SIDEBAR NAVIGATION -->
+            <aside id="app-sidebar" class="app-sidebar">
+                <nav class="sidebar-nav">
+                    <a href="#projects" class="nav-item active" data-view="projects">
+                        <i data-lucide="folder-git-2"></i>
+                        <span>Projects</span>
+                    </a>
+                    
+                    <!-- Project specific submenus (shown only when a project is selected) -->
+                    <div id="project-submenu" class="submenu hidden">
+                        <div class="submenu-title">Current Project</div>
+                        
+                        <a href="#overview" class="nav-item" data-view="overview">
+                            <i data-lucide="bar-chart-3"></i>
+                            <span>Overview</span>
+                        </a>
+                        <a href="#tasks" class="nav-item" data-view="tasks">
+                            <i data-lucide="check-square"></i>
+                            <span>Tasks List</span>
+                        </a>
+                        <a href="#issues" class="nav-item" data-view="issues">
+                            <i data-lucide="message-square"></i>
+                            <span>Issues / QA</span>
+                            <span id="open-issues-count" class="badge red hidden">0</span>
+                        </a>
+                        <a href="#settings-schema" class="nav-item" data-view="settings-schema">
+                            <i data-lucide="settings"></i>
+                            <span>Category Schema</span>
+                        </a>
+                        <a href="#settings-members" class="nav-item" data-view="settings-members">
+                            <i data-lucide="users"></i>
+                            <span>Members & Roles</span>
+                        </a>
+                        <a href="#settings-batches" class="nav-item" data-view="settings-batches">
+                            <i data-lucide="database"></i>
+                            <span>Batches</span>
+                        </a>
+                    </div>
+                </nav>
+            </aside>
+
+            <!-- MAIN CONTENT DISPLAY PANELS -->
+            <main class="content-panel">
+                
+                <!-- VIEW 1: PROJECTS DIRECTORY -->
+                <section id="view-projects" class="view-section active">
+                    <div class="section-header">
+                        <div>
+                            <h1>Projects Directory</h1>
+                            <p class="subtitle">Select an existing project or create a new annotation workspace.</p>
+                        </div>
+                        <button id="btn-create-project" class="btn btn-primary">
+                            <i data-lucide="plus"></i> New Project
+                        </button>
+                    </div>
+                    
+                    <div id="projects-grid" class="projects-grid">
+                        <!-- Loaded dynamically -->
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>Loading projects...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 2: PROJECT OVERVIEW / DASHBOARD -->
+                <section id="view-overview" class="view-section hidden">
+                    <div class="section-header">
+                        <div>
+                            <h1 id="overview-project-name">Project Dashboard</h1>
+                            <p id="overview-project-desc" class="subtitle">Overview and statistics</p>
+                        </div>
+                        <div class="header-actions">
+                            <button id="overview-start-labeling" class="btn btn-danger">
+                                <i data-lucide="pencil"></i> Start Labeling
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue"><i data-lucide="check-check"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Label Done</span>
+                                <h3 id="stat-label-done">0</h3>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange"><i data-lucide="clock"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Label To Do</span>
+                                <h3 id="stat-label-todo">0</h3>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple"><i data-lucide="eye"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Review Done</span>
+                                <h3 id="stat-review-done">0</h3>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon red"><i data-lucide="help-circle"></i></div>
+                            <div class="stat-info">
+                                <span class="stat-label">Review To Do</span>
+                                <h3 id="stat-review-todo">0</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overview-content">
+                        <div class="card p-6">
+                            <h2>Project Configuration Summary</h2>
+                            <div class="config-summary">
+                                <div class="config-item">
+                                    <span class="label">Date Created:</span>
+                                    <span id="overview-created-at" class="value">-</span>
+                                </div>
+                                <div class="config-item">
+                                    <span class="label">Total Batches:</span>
+                                    <span id="overview-total-batches" class="value">0</span>
+                                </div>
+                                <div class="config-item">
+                                    <span class="label">Total Tasks:</span>
+                                    <span id="overview-total-tasks" class="value">0</span>
+                                </div>
+                                <div class="config-item">
+                                    <span class="label">Project Manager:</span>
+                                    <span id="overview-project-manager" class="value">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 3: TASKS LIST -->
+                <section id="view-tasks" class="view-section hidden">
+                    <div class="section-header">
+                        <div>
+                            <h1>Tasks Manager</h1>
+                            <p class="subtitle">Browse, filter, and assign dataset tasks.</p>
+                        </div>
+                        <div id="manager-task-actions" class="header-actions hidden">
+                            <button id="btn-upload-tasks" class="btn btn-secondary">
+                                <i data-lucide="upload-cloud"></i> Upload Mock Tasks
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="tasks-container">
+                        <!-- Sidebar Filters -->
+                        <div class="tasks-sidebar">
+                            <h3>Stages</h3>
+                            <ul class="task-stage-filters">
+                                <li class="stage-filter-item active" data-stage="">
+                                    <span>All Stages</span>
+                                    <span id="badge-all-stages" class="stage-badge">0</span>
+                                </li>
+                                <li class="stage-filter-item" data-stage="start">
+                                    <span>Start</span>
+                                    <span id="badge-stage-start" class="stage-badge">0</span>
+                                </li>
+                                <li class="stage-filter-item" data-stage="label">
+                                    <span>Label</span>
+                                    <span id="badge-stage-label" class="stage-badge">0</span>
+                                </li>
+                                <li class="stage-filter-item" data-stage="review">
+                                    <span>Review</span>
+                                    <span id="badge-stage-review" class="stage-badge">0</span>
+                                </li>
+                                <li class="stage-filter-item" data-stage="complete">
+                                    <span>Complete</span>
+                                    <span id="badge-stage-complete" class="stage-badge">0</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Main Table -->
+                        <div class="tasks-table-wrapper card">
+                            <table class="tasks-table">
+                                <thead>
+                                    <tr>
+                                        <th>Task ID</th>
+                                        <th>External ID</th>
+                                        <th>Type</th>
+                                        <th>Stage</th>
+                                        <th>Assignee</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tasks-table-body">
+                                    <!-- Loaded dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 4: CATEGORY SCHEMA CONFIGURATOR -->
+                <section id="view-settings-schema" class="view-section hidden">
+                    <div class="section-header">
+                        <div>
+                            <h1>Category Schema Configuration</h1>
+                            <p class="subtitle">Define the annotation labels, shapes, and shortcut keys for labeling tasks.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="schema-layout">
+                        <!-- Add Label Panel -->
+                        <div class="card p-6 label-creator">
+                            <h2>Add New Category</h2>
+                            <div class="form-group">
+                                <label for="schema-label-name">Category Name</label>
+                                <input type="text" id="schema-label-name" placeholder="e.g., Car, Pedestrian, Helmet">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="schema-label-color">Display Color</label>
+                                <div class="color-picker-grid">
+                                    <button class="color-dot active" style="background-color: #EF4444;" data-color="#EF4444"></button>
+                                    <button class="color-dot" style="background-color: #F59E0B;" data-color="#F59E0B"></button>
+                                    <button class="color-dot" style="background-color: #10B981;" data-color="#10B981"></button>
+                                    <button class="color-dot" style="background-color: #3B82F6;" data-color="#3B82F6"></button>
+                                    <button class="color-dot" style="background-color: #8B5CF6;" data-color="#8B5CF6"></button>
+                                    <button class="color-dot" style="background-color: #EC4899;" data-color="#EC4899"></button>
+                                    <button class="color-dot" style="background-color: #6B7280;" data-color="#6B7280"></button>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="schema-label-tool">Annotation Tool Type</label>
+                                <select id="schema-label-tool" class="form-select">
+                                    <optgroup label="Drawing Tools">
+                                        <option value="bbox">Bounding Box</option>
+                                        <option value="polygon">Polygon</option>
+                                        <option value="polyline">Polyline</option>
+                                        <option value="point">Point (Keypoint)</option>
+                                        <option value="circle">Circle</option>
+                                    </optgroup>
+                                    <optgroup label="Text Tools">
+                                        <option value="ner">Text Entity (NER Highlight)</option>
+                                    </optgroup>
+                                    <optgroup label="Classifications">
+                                        <option value="radio">Radio Classification</option>
+                                        <option value="checkbox">Checkbox Classification</option>
+                                        <option value="text">Text Box Classification</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="schema-label-shortcut">Hotkey Shortcut</label>
+                                <select id="schema-label-shortcut" class="form-select">
+                                    <option value="1">Key 1</option>
+                                    <option value="2">Key 2</option>
+                                    <option value="3">Key 3</option>
+                                    <option value="4">Key 4</option>
+                                    <option value="5">Key 5</option>
+                                    <option value="6">Key 6</option>
+                                    <option value="7">Key 7</option>
+                                    <option value="8">Key 8</option>
+                                    <option value="9">Key 9</option>
+                                </select>
+                            </div>
+                            
+                            <button id="btn-add-schema-item" class="btn btn-primary w-full">
+                                <i data-lucide="plus"></i> Add Category
+                            </button>
+                        </div>
+                        
+                        <!-- List Panel -->
+                        <div class="card p-6 label-schema-list">
+                            <h2>Configured Categories</h2>
+                            <div id="schema-items-container" class="schema-items-container">
+                                <!-- Loaded dynamically -->
+                            </div>
+                            <div class="schema-footer-actions">
+                                <button id="btn-save-schema" class="btn btn-success">
+                                    <i data-lucide="save"></i> Save Schema Configuration
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 5: MEMBERS & ROLES -->
+                <section id="view-settings-members" class="view-section hidden">
+                    <div class="section-header">
+                        <div>
+                            <h1>Project Members & Roles</h1>
+                            <p class="subtitle">Manage project collaborators and control labeling/review access rights.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="members-layout card p-6">
+                        <div class="members-actions">
+                            <div class="add-member-form">
+                                <select id="member-add-user-select" class="form-select">
+                                    <!-- Loaded from dynamic list of database profiles -->
+                                </select>
+                                <select id="member-add-role-select" class="form-select">
+                                    <option value="labeler">Labeler</option>
+                                    <option value="reviewer">Reviewer</option>
+                                    <option value="lead">Lead</option>
+                                    <option value="manager">Manager</option>
+                                </select>
+                                <button id="btn-add-member" class="btn btn-primary">
+                                    <i data-lucide="user-plus"></i> Add Member
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <table class="members-table mt-4">
+                            <thead>
+                                <tr>
+                                    <th>Collaborator</th>
+                                    <th>Email</th>
+                                    <th>Project Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="members-table-body">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- VIEW 6: BATCHES -->
+                <section id="view-settings-batches" class="view-section hidden">
+                    <div class="section-header">
+                        <div>
+                            <h1>Batches Configuration</h1>
+                            <p class="subtitle">Partition dataset tasks into discrete delivery batches.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="batches-layout card p-6">
+                        <div class="add-batch-form">
+                            <input type="text" id="batch-new-name" placeholder="e.g., Train-Batch-1, Batch-Validation">
+                            <button id="btn-create-batch" class="btn btn-primary">
+                                <i data-lucide="plus"></i> Add Batch
+                            </button>
+                        </div>
+                        
+                        <table class="batches-table mt-4">
+                            <thead>
+                                <tr>
+                                    <th>Batch Name</th>
+                                    <th>Batch ID</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batches-table-body">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- VIEW 7: ISSUES / QA COMMENTS -->
+                <section id="view-issues" class="view-section hidden">
+                    <div class="section-header">
+                        <div>
+                            <h1>Project Issues & QA Log</h1>
+                            <p class="subtitle">Track reviewer rejects, annotations precision errors, and task discussions.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card p-6">
+                        <table class="issues-table">
+                            <thead>
+                                <tr>
+                                    <th>Task ID</th>
+                                    <th>QA Comment / Issue Description</th>
+                                    <th>Status</th>
+                                    <th>Created By</th>
+                                    <th>Created At</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="issues-table-body">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- VIEW 8: ANNOTATION WORKSPACE (CANVAS / EDITOR) -->
+                <section id="view-workspace" class="view-section hidden workspace-section">
+                    <!-- Workspace Header Actions -->
+                    <div class="workspace-header">
+                        <button id="workspace-back-btn" class="btn btn-icon-only" title="Back to Tasks">
+                            <i data-lucide="arrow-left"></i>
+                        </button>
+                        <div class="workspace-task-meta">
+                            <span id="workspace-task-id-badge" class="badge">Task: -</span>
+                            <span id="workspace-task-type-badge" class="badge blue">-</span>
+                            <span id="workspace-task-stage-badge" class="badge orange">-</span>
+                        </div>
+                        
+                        <!-- Drawing Tools Bar (visible only in Image Mode) -->
+                        <div id="image-drawing-toolbar" class="drawing-toolbar hidden">
+                            <button class="tool-btn active" data-tool="bbox" title="Bounding Box (B)"><i data-lucide="square"></i></button>
+                            <button class="tool-btn" data-tool="polygon" title="Polygon (P)"><i data-lucide="hexagon"></i></button>
+                            <button class="tool-btn" data-tool="polyline" title="Polyline (L)"><i data-lucide="trending-up"></i></button>
+                            <button class="tool-btn" data-tool="point" title="Point (K)"><i data-lucide="map-pin"></i></button>
+                            <button class="tool-btn" data-tool="circle" title="Circle (C)"><i data-lucide="circle"></i></button>
+                            <span class="tool-divider">|</span>
+                            <button class="tool-btn" id="canvas-zoom-in" title="Zoom In"><i data-lucide="zoom-in"></i></button>
+                            <button class="tool-btn" id="canvas-zoom-out" title="Zoom Out"><i data-lucide="zoom-out"></i></button>
+                            <button class="tool-btn" id="canvas-reset" title="Reset View"><i data-lucide="refresh-cw"></i></button>
+                        </div>
+                        
+                        <!-- Text Mode helper -->
+                        <div id="text-drawing-toolbar" class="drawing-toolbar hidden">
+                            <span class="toolbar-text"><i data-lucide="info"></i> Highlight text to tag entities (NER)</span>
+                        </div>
+
+                        <div class="workspace-actions">
+                            <button id="btn-workspace-reject" class="btn btn-danger hidden">
+                                <i data-lucide="thumbs-down"></i> Reject
+                            </button>
+                            <button id="btn-workspace-approve" class="btn btn-success hidden">
+                                <i data-lucide="thumbs-up"></i> Approve
+                            </button>
+                            <button id="btn-workspace-submit" class="btn btn-primary">
+                                <i data-lucide="send"></i> Submit Task
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="workspace-workspace">
+                        <!-- CENTER AREA: WORKSPACE VIEWPORT -->
+                        <div class="workspace-viewport">
+                            
+                            <!-- A. IMAGE VIEWPORT (Drawing Canvas) -->
+                            <div id="image-viewport-container" class="viewport-inner hidden">
+                                <div id="canvas-pan-zoom-container" class="pan-zoom-wrapper">
+                                    <img id="workspace-image" src="" alt="Label Image" draggable="false">
+                                    <!-- SVG Overlay Layer for Vector Drawing -->
+                                    <svg id="canvas-svg" class="canvas-svg">
+                                        <g id="svg-shapes-group"></g>
+                                        <g id="svg-temp-group"></g>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <!-- B. TEXT VIEWPORT (Text Highlighting NER) -->
+                            <div id="text-viewport-container" class="viewport-inner hidden card p-8">
+                                <div id="text-workspace-content" class="text-workspace-content">
+                                    <!-- Rendered text dynamically -->
+                                </div>
+                            </div>
+                            
+                        </div>
+
+                        <!-- RIGHT WORKSPACE SIDEBAR -->
+                        <aside class="workspace-sidebar">
+                            
+                            <!-- Active Label / Tool Config -->
+                            <div class="workspace-card">
+                                <h3>Category Labels</h3>
+                                <div id="workspace-labels-selector" class="labels-selector-grid">
+                                    <!-- Loaded dynamically from project category_schema -->
+                                </div>
+                            </div>
+                            
+                            <!-- Dynamic Classifications Forms -->
+                            <div class="workspace-card">
+                                <h3>Classifications Attributes</h3>
+                                <div id="workspace-classifications-form" class="classifications-form">
+                                    <!-- Loaded dynamically from category_schema -->
+                                    <p class="placeholder-text">No active attribute forms configured.</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Created shapes / text highlighted list -->
+                            <div class="workspace-card flex-1 overflow-y-auto">
+                                <h3>Annotations List</h3>
+                                <div id="annotations-list" class="annotations-list">
+                                    <!-- Loaded dynamically -->
+                                </div>
+                            </div>
+                            
+                            <!-- Issues & Comments on Workspace -->
+                            <div class="workspace-card">
+                                <h3>QA Comments & Issues</h3>
+                                <div class="workspace-issues-log" id="workspace-issues-log">
+                                    <!-- Loaded dynamically -->
+                                </div>
+                                <div class="workspace-add-issue">
+                                    <input type="text" id="workspace-new-issue-input" placeholder="Flag an issue on this task...">
+                                    <button id="btn-workspace-add-issue" class="btn btn-secondary btn-icon-only">
+                                        <i data-lucide="plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                        </aside>
+                    </div>
+                </section>
+                
+            </main>
+        </div>
+
+        <!-- MODAL 1: CREATE PROJECT -->
+        <div id="modal-create-project" class="modal-backdrop hidden">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h2>Create New Project</h2>
+                    <button class="btn-close-modal btn-icon-only"><i data-lucide="x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="new-project-name">Project Name</label>
+                        <input type="text" id="new-project-name" placeholder="e.g., Road Safety BBoxes, Named Entity Extraction">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-project-desc">Description</label>
+                        <textarea id="new-project-desc" placeholder="Provide background context for the annotators..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-close-modal">Cancel</button>
+                    <button id="btn-modal-create-project-submit" class="btn btn-primary">Create Project</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL 2: UPLOAD TASKS -->
+        <div id="modal-upload-tasks" class="modal-backdrop hidden">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h2>Upload Mock Assets</h2>
+                    <button class="btn-close-modal btn-icon-only"><i data-lucide="x"></i></button>
+                </div>
+                <div class="modal-body">
+                    <p class="subtitle mb-4">Choose a batch to assign tasks to, then select which mock assets to populate.</p>
+                    <div class="form-group">
+                        <label for="upload-task-batch-select">Batch</label>
+                        <select id="upload-task-batch-select" class="form-select">
+                            <option value="">No Batch</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Mock Dataset Type</label>
+                        <div class="dataset-preset-options mt-2">
+                            <label class="radio-label">
+                                <input type="radio" name="mock-dataset-preset" value="images" checked>
+                                <span><strong>Traffic Road Detection</strong> (Images containing traffic details)</span>
+                            </label>
+                            <label class="radio-label mt-2">
+                                <input type="radio" name="mock-dataset-preset" value="text">
+                                <span><strong>Medical NLP Extraction</strong> (Short clinical summary logs)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-close-modal">Cancel</button>
+                    <button id="btn-modal-upload-tasks-submit" class="btn btn-primary">Populate Dataset</button>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Client Application JS -->
+    <script src="/app.js"></script>
+</body>
+</html>
